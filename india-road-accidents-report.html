@@ -1,0 +1,774 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Road Safety &amp; Accident Analysis (2001–2023)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=Mukta:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+  :root {
+    --color-bg: #ffffff;
+    --color-card-bg: #fbfcfd;
+    --color-heading: #14213D;
+    --color-body: #3D4451;
+    --color-muted: #6B7280;
+    --color-border: #e2e8f0;
+    --color-accent: #C0152F;
+    --color-secondary: #1B4B66;
+    --color-tertiary: #E2A93A;
+    --color-quaternary: #4F8FC0;
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    background: var(--color-bg);
+    color: var(--color-body);
+    font-family: 'Mukta', sans-serif;
+    font-weight: 400;
+  }
+
+  h1, h2, h3 {
+    font-family: 'Lato', sans-serif;
+    color: var(--color-heading);
+    margin: 0;
+  }
+
+  h1 { font-weight: 900; letter-spacing: -0.01em; font-size: 1.9rem; }
+  h2 { font-weight: 700; font-size: 1.5rem; }
+  h3 { font-weight: 700; font-size: 1.15rem; }
+
+  a { color: var(--color-secondary); text-decoration: none; }
+
+  .page-wrap {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 24px 20px 80px;
+  }
+
+  header.site-header {
+    padding: 28px 0 20px;
+    border-bottom: 1px solid var(--color-border);
+    margin-bottom: 28px;
+  }
+
+  header.site-header p.subtitle {
+    color: var(--color-muted);
+    font-size: 1rem;
+    margin-top: 8px;
+    font-weight: 400;
+  }
+
+  .view {
+    opacity: 1;
+    transform: translateY(0);
+    transition: opacity 200ms ease, transform 200ms ease;
+  }
+
+  .view.hidden {
+    display: none;
+  }
+
+  .view.entering {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+
+  .card {
+    background: var(--color-card-bg);
+    border: 1px solid var(--color-border);
+    border-radius: 14px;
+    box-shadow: 0 1px 3px rgba(20,33,61,0.06), 0 4px 12px rgba(20,33,61,0.04);
+    padding: 22px 22px 18px;
+    margin-bottom: 24px;
+  }
+
+  .card h3 {
+    margin-bottom: 4px;
+  }
+
+  .card .chart-caption {
+    color: var(--color-muted);
+    font-size: 0.85rem;
+    margin: 4px 0 14px;
+  }
+
+  .chart-wrapper {
+    height: 380px;
+    position: relative;
+  }
+
+  .charts-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+
+  /* Dig Deeper */
+  .dig-deeper-card {
+    background: var(--color-card-bg);
+    border: 1px solid var(--color-border);
+    border-radius: 14px;
+    box-shadow: 0 1px 3px rgba(20,33,61,0.06), 0 4px 12px rgba(20,33,61,0.04);
+    padding: 24px 24px 22px;
+  }
+
+  .dig-deeper-card .eyebrow {
+    color: var(--color-accent);
+    font-weight: 700;
+    font-size: 0.78rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+
+  .dig-deeper-intro {
+    color: var(--color-muted);
+    margin: 6px 0 18px;
+    font-size: 0.98rem;
+  }
+
+  .question-tiles {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+  }
+
+  @media (max-width: 800px) {
+    .question-tiles { grid-template-columns: 1fr; }
+  }
+
+  .question-tile {
+    background: #f4f6f8;
+    border: 1px solid var(--color-border);
+    border-radius: 12px;
+    padding: 18px 18px;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 10px;
+    transition: background 150ms ease, transform 150ms ease;
+    min-height: 108px;
+  }
+
+  .question-tile:hover {
+    background: #ebeff3;
+    transform: translateY(-2px);
+  }
+
+  .question-tile .q-text {
+    font-weight: 600;
+    color: var(--color-heading);
+    font-size: 0.98rem;
+    line-height: 1.35;
+  }
+
+  .question-tile .q-arrow {
+    align-self: flex-end;
+    color: var(--color-accent);
+    font-size: 1.2rem;
+    font-weight: 700;
+  }
+
+  /* question tile special emphasis for Tamil Nadu tile - handled via .tile-emphasis */
+  .tile-emphasis {
+    background: #fbeceb;
+  }
+  .tile-emphasis:hover {
+    background: #f6dcda;
+  }
+  .tile-emphasis .eyebrow-mini {
+    color: var(--color-accent);
+    font-weight: 700;
+    font-size: 0.72rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+
+  /* Back link + breadcrumb */
+  .back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--color-secondary);
+    font-weight: 600;
+    font-size: 0.95rem;
+    margin-bottom: 18px;
+    cursor: pointer;
+  }
+  .back-link:hover { text-decoration: underline; }
+
+  .breadcrumb {
+    color: var(--color-muted);
+    font-size: 0.85rem;
+    margin-bottom: 6px;
+    font-weight: 500;
+  }
+  .breadcrumb .current-step {
+    color: var(--color-accent);
+    font-weight: 700;
+  }
+
+  .question-view h2 {
+    margin-bottom: 18px;
+    max-width: 800px;
+  }
+
+  .placeholder-chart {
+    height: 380px;
+    border: 2px dashed var(--color-border);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    color: var(--color-muted);
+    padding: 30px;
+    margin-bottom: 24px;
+    background: #fafbfc;
+  }
+
+  .placeholder-chart p {
+    max-width: 480px;
+    font-size: 0.95rem;
+    line-height: 1.5;
+  }
+
+  .narrative p {
+    font-size: 1.02rem;
+    line-height: 1.7;
+    color: var(--color-body);
+    max-width: 760px;
+    margin: 0 0 16px;
+  }
+
+  .narrative p.closing-note {
+    color: var(--color-muted);
+    font-style: italic;
+  }
+
+  .nav-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 32px;
+    padding-top: 20px;
+    border-top: 1px solid var(--color-border);
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .nav-btn {
+    font-family: 'Mukta', sans-serif;
+    font-weight: 600;
+    font-size: 0.95rem;
+    color: var(--color-secondary);
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 8px 4px;
+  }
+
+  .nav-btn:hover { text-decoration: underline; }
+
+  .nav-btn.primary {
+    color: var(--color-accent);
+  }
+
+  .nav-spacer { flex: 1; }
+
+  /* Overview nav (top-level) */
+  .top-nav {
+    display: flex;
+    gap: 6px;
+    margin-top: 6px;
+  }
+
+  @media (max-width: 600px) {
+    header.site-header { padding: 20px 0 16px; }
+    h1 { font-size: 1.5rem; }
+    .card { padding: 16px; }
+    .chart-wrapper { height: 300px; }
+    .placeholder-chart { height: 300px; }
+  }
+</style>
+</head>
+<body>
+<div class="page-wrap">
+
+  <header class="site-header">
+    <h1>Road Safety &amp; Accident Analysis (2001–2023)</h1>
+    <p class="subtitle">A visual look at more than two decades of road accident data in India — trends, causes, geography, and timing.</p>
+  </header>
+
+  <!-- ================= VIEW 0: OVERVIEW ================= -->
+  <div id="view-overview" class="view">
+
+    <div class="card">
+      <h3>Annual Fatalities by Major Vehicle Category (2001–2023)</h3>
+      <p class="chart-caption">Two-wheelers have consistently accounted for the largest share of vehicle-category fatalities.</p>
+      <div class="chart-wrapper"><canvas id="chart1"></canvas></div>
+    </div>
+
+    <div class="card">
+      <h3>Primary Causes of Road Accidents (Cumulative 2001–2023)</h3>
+      <p class="chart-caption">Over-speeding dwarfs every other single cause, by more than an order of magnitude.</p>
+      <div class="chart-wrapper"><canvas id="chart2"></canvas></div>
+    </div>
+
+    <div class="card">
+      <h3>Fatalities by Road Classification (2001–2023)</h3>
+      <p class="chart-caption">National Highways carry a disproportionate share of fatalities relative to their length.</p>
+      <div class="chart-wrapper"><canvas id="chart3"></canvas></div>
+    </div>
+
+    <div class="card">
+      <h3>Top 10 Indian States by Cumulative Fatalities (2001–2023)</h3>
+      <p class="chart-caption">Tamil Nadu tops the list — click its bar to dig into why.</p>
+      <div class="chart-wrapper"><canvas id="chart4"></canvas></div>
+    </div>
+
+    <div class="card">
+      <h3>Diurnal Accident &amp; Fatality Profile by 3-Hour Interval</h3>
+      <p class="chart-caption">Both accidents and deaths climb steadily through the day, peaking in the evening.</p>
+      <div class="chart-wrapper"><canvas id="chart5"></canvas></div>
+    </div>
+
+    <div class="dig-deeper-card">
+      <div class="eyebrow">Dig Deeper</div>
+      <h2>Three questions the data raises</h2>
+      <p class="dig-deeper-intro">The charts above surface patterns that deserve a closer look. Tap a question to explore it.</p>
+      <div class="question-tiles">
+        <div class="question-tile" onclick="goToView('view-q1')">
+          <div class="q-text">Why did 2-wheeler accidents sharply spike in 2009?</div>
+          <div class="q-arrow">→</div>
+        </div>
+        <div class="question-tile tile-emphasis" onclick="goToView('view-q2')">
+          <div class="eyebrow-mini">Tamil Nadu</div>
+          <div class="q-text">Why does Tamil Nadu have the highest cumulative deaths despite being less populous than UP/Maharashtra?</div>
+          <div class="q-arrow">→</div>
+        </div>
+        <div class="question-tile" onclick="goToView('view-q3')">
+          <div class="q-text">Why do accidents gradually increase as day turns to night?</div>
+          <div class="q-arrow">→</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ================= VIEW 1: QUESTION 1 - 2-WHEELER 2009 SPIKE ================= -->
+  <div id="view-q1" class="view hidden question-view">
+    <a class="back-link" onclick="goToView('view-overview')">← Back to Overview</a>
+    <div class="breadcrumb">Overview → <span class="current-step">Question 1 of 3</span></div>
+    <h2>Why did 2-wheeler accidents sharply spike in 2009?</h2>
+
+    <!-- REPLACE_WITH_REAL_CHART: question_1 -->
+    <div class="placeholder-chart">
+      <p>Chart coming soon — will visualize two-wheeler sales &amp; fleet growth vs. fatalities, plus age/gender skew of victims</p>
+    </div>
+
+    <div class="narrative">
+      <p>At first glance, the jump in two-wheeler fatalities in 2009 looks like a sudden surge in risk on India's roads. But the fleet growth numbers don't quite support a "more bikes, more accidents" story: 2008–09 sat in the middle of the global financial crisis, and two-wheeler sales growth in India slowed to roughly 2.6% that year — hardly the kind of fleet expansion that would explain a spike of this size.</p>
+      <p>A more likely explanation is a shift in how accidents were being classified and recorded around that period, rather than a genuine one-year surge in risk. It's also worth noting that NCRB data has consistently shown young men as the dominant fatality group among two-wheeler riders — a pattern that ties into who was riding, and how much exposure they had, even before 2009.</p>
+      <p class="closing-note">Once we plug in real data, we'll be able to test this.</p>
+    </div>
+
+    <div class="nav-row">
+      <div class="nav-spacer"></div>
+      <button class="nav-btn primary" onclick="goToView('view-q2')">Next question →</button>
+    </div>
+  </div>
+
+  <!-- ================= VIEW 2: QUESTION 2 - TAMIL NADU ================= -->
+  <div id="view-q2" class="view hidden question-view">
+    <a class="back-link" onclick="goToView('view-overview')">← Back to Overview</a>
+    <div class="breadcrumb">Overview → <span class="current-step">Question 2 of 3</span></div>
+    <h2>Why does Tamil Nadu have the highest cumulative deaths despite being less populous than UP/Maharashtra?</h2>
+
+    <div class="narrative">
+      <p>Tamil Nadu's road toll is best explained by a combination of two factors rather than either one alone: an above-average, dense road network, and the second-largest vehicle fleet of any Indian state. Road density by itself doesn't explain it — that's actually higher in Bihar and West Bengal — but paired with a huge and growing number of vehicles on the road, Tamil Nadu ends up with an unusually high level of overall traffic exposure.</p>
+    </div>
+
+    <div class="card">
+      <h3>Total Road Network Length &amp; Density by State</h3>
+      <div class="chart-wrapper"><canvas id="chartA"></canvas></div>
+      <p class="chart-caption">Source: MoRTH Basic Road Statistics of India 2019–20, as of 31 March 2020. Density = total road length ÷ state area. Tamil Nadu is above the national average (~193) but not the single highest — Bihar and West Bengal score higher due to dense rural-road networks in smaller states.</p>
+    </div>
+
+    <div class="card">
+      <h3>Registered Motor Vehicles by State</h3>
+      <div class="chart-wrapper"><canvas id="chartB"></canvas></div>
+      <p class="chart-caption">Source: MoRTH Road Transport Year Book, as of 31 March 2015. Tamil Nadu has India's 2nd-largest vehicle fleet.</p>
+    </div>
+
+    <div class="narrative">
+      <p>Put together, a dense-but-not-extreme road network, a huge vehicle fleet, and the resulting traffic exposure — population density × road length × vehicle volume — explain Tamil Nadu's cumulative fatality numbers far better than any single factor taken on its own.</p>
+    </div>
+
+    <div class="nav-row">
+      <button class="nav-btn" onclick="goToView('view-q1')">← Previous question</button>
+      <div class="nav-spacer"></div>
+      <button class="nav-btn primary" onclick="goToView('view-q3')">Next question →</button>
+    </div>
+  </div>
+
+  <!-- ================= VIEW 3: QUESTION 3 - DAY TO NIGHT ================= -->
+  <div id="view-q3" class="view hidden question-view">
+    <a class="back-link" onclick="goToView('view-overview')">← Back to Overview</a>
+    <div class="breadcrumb">Overview → <span class="current-step">Question 3 of 3</span></div>
+    <h2>Why do accidents gradually increase as day turns to night?</h2>
+
+    <!-- REPLACE_WITH_REAL_CHART: question_3 -->
+    <div class="placeholder-chart">
+      <p>Chart coming soon — will visualize accidents by lighting condition and hour-of-day using granular timestamped data</p>
+    </div>
+
+    <div class="narrative">
+      <p>Several factors likely compound as daylight fades. Reduced visibility after dark makes it harder to judge distances, spot pedestrians, and react in time, especially on roads with poor lighting or markings. The evening period also overlaps with rush-hour commute traffic plus leisure and social travel, pushing more vehicles onto the road at the same time drivers are most fatigued from a full day.</p>
+      <p>Night-time hours are also when drunk driving rates tend to be highest, and when enforcement — traffic policing, speed checks, sobriety checks — is typically sparser than during the day. Together, lower visibility, higher traffic density, driver fatigue, alcohol involvement, and lighter enforcement point in the same direction: more risk as the day turns to night.</p>
+      <p class="closing-note">Once we plug in real data, we'll be able to test this.</p>
+    </div>
+
+    <div class="nav-row">
+      <button class="nav-btn" onclick="goToView('view-q2')">← Previous question</button>
+      <div class="nav-spacer"></div>
+      <button class="nav-btn primary" onclick="goToView('view-overview')">Back to Overview</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  // ---------- View switching ----------
+  function goToView(id) {
+    var views = document.querySelectorAll('.view');
+    views.forEach(function (v) {
+      if (v.id === id) {
+        v.classList.remove('hidden');
+        v.classList.add('entering');
+        requestAnimationFrame(function () {
+          v.classList.remove('entering');
+        });
+      } else {
+        v.classList.add('hidden');
+      }
+    });
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  // ---------- Chart.js shared defaults ----------
+  Chart.defaults.font.family = 'Mukta';
+  Chart.defaults.color = '#3D4451';
+
+  var gridColor = '#e2e8f0';
+  var bodyColor = '#3D4451';
+
+  var commonScaleGrid = { color: gridColor };
+  var commonTicks = { color: bodyColor, font: { family: 'Mukta' } };
+  var commonLegend = {
+    labels: { color: bodyColor, font: { family: 'Mukta' } }
+  };
+
+  var YEARS = ['2001','2002','2003','2004','2005','2006','2007','2008','2009','2010','2011','2012','2013','2014','2015','2016','2017','2018','2019','2020','2021','2022','2023'];
+
+  // ---------- Chart 1: Annual Fatalities by Vehicle Category ----------
+  new Chart(document.getElementById('chart1'), {
+    type: 'line',
+    data: {
+      labels: YEARS,
+      datasets: [
+        {
+          label: 'Two Wheelers',
+          data: [69804,72106,77582,81649,75114,75316,66122,58291,90540,86314,75231,82215,72297,72297,83368,77758,88286,50088,67656,71441,46281,49343,66437],
+          borderColor: '#C0152F',
+          backgroundColor: '#C0152F',
+          tension: 0.25,
+          pointRadius: 2
+        },
+        {
+          label: 'Trucks & Lorries',
+          data: [35450,23987,42662,29049,34068,40435,52149,49745,38667,39305,34321,31108,34083,29356,42548,33555,38673,34838,45952,25945,35309,30373,27752],
+          borderColor: '#E2A93A',
+          backgroundColor: '#E2A93A',
+          tension: 0.25,
+          pointRadius: 2
+        },
+        {
+          label: 'Cars & Taxis',
+          data: [37215,27066,36859,22580,23704,33672,24579,32047,24009,19898,27794,37233,35103,27382,20471,22624,24378,32322,20269,19404,25521,17151,15868],
+          borderColor: '#1B4B66',
+          backgroundColor: '#1B4B66',
+          tension: 0.25,
+          pointRadius: 2
+        },
+        {
+          label: 'Buses',
+          data: [6246,18403,6350,10703,7849,5760,5949,14631,7334,5369,5863,9133,6825,9338,8498,11362,1442,11364,4291,10322,5279,10702,6257],
+          borderColor: '#4F8FC0',
+          backgroundColor: '#4F8FC0',
+          tension: 0.25,
+          pointRadius: 2
+        },
+        {
+          label: 'Auto Rickshaws',
+          data: [12664,8284,4016,10992,4998,8842,10215,8509,4592,10659,6921,3754,5516,19718,4846,7705,8507,10411,5745,5098,6168,3213,2802],
+          borderColor: '#6B7280',
+          backgroundColor: '#6B7280',
+          tension: 0.25,
+          pointRadius: 2
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { position: 'top', ...commonLegend } },
+      scales: {
+        x: { grid: commonScaleGrid, ticks: commonTicks },
+        y: { grid: commonScaleGrid, ticks: commonTicks }
+      }
+    }
+  });
+
+  // ---------- Chart 2: Primary Causes (horizontal bar) ----------
+  new Chart(document.getElementById('chart2'), {
+    type: 'bar',
+    data: {
+      labels: ['Over Speeding','Driving on Wrong Side','Road Conditions','Drunken Driving','Vehicle Defects','Use of Mobile Phone','Pedestrian Error','Jumping Red Light','Overtaking','Other Causes','Weather Conditions'],
+      datasets: [{
+        label: 'Cumulative accidents (millions)',
+        data: [17.29,1.18,0.71,0.68,0.55,0.48,0.47,0.40,0.37,0.24,0.22],
+        backgroundColor: '#1B4B66'
+      }]
+    },
+    options: {
+      indexAxis: 'y',
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { grid: commonScaleGrid, ticks: commonTicks, title: { display: true, text: 'Millions of accidents', color: bodyColor } },
+        y: { grid: { display: false }, ticks: commonTicks }
+      }
+    }
+  });
+
+  // ---------- Chart 3: Fatalities by Road Classification ----------
+  new Chart(document.getElementById('chart3'), {
+    type: 'line',
+    data: {
+      labels: YEARS,
+      datasets: [
+        {
+          label: 'National Highways',
+          data: [47807,45938,49755,45566,51286,46564,47024,50664,46134,49936,45266,46622,47103,48436,46534,47096,47948,44660,41129,38463,37987,34792,34162],
+          borderColor: '#C0152F',
+          backgroundColor: '#C0152F',
+          tension: 0.25,
+          pointRadius: 2
+        },
+        {
+          label: 'State Highways',
+          data: [42176,39828,40248,37201,41708,39005,41197,40607,37195,38713,36859,37702,35381,39265,37678,39722,36328,34985,32960,32532,30742,26918,26839],
+          borderColor: '#E2A93A',
+          backgroundColor: '#E2A93A',
+          tension: 0.25,
+          pointRadius: 2
+        },
+        {
+          label: 'Other Roads',
+          data: [44080,41975,39376,41187,38716,39573,39967,39941,42950,39028,38332,41072,38963,37715,39793,39190,36856,35707,35343,32537,31825,30759,27978],
+          borderColor: '#1B4B66',
+          backgroundColor: '#1B4B66',
+          tension: 0.25,
+          pointRadius: 2
+        },
+        {
+          label: 'City Roads',
+          data: [29538,29179,28632,28122,29240,28393,29947,28861,28264,27494,26297,28781,27505,27464,25687,26754,27001,23924,24675,21606,20905,19221,20250],
+          borderColor: '#4F8FC0',
+          backgroundColor: '#4F8FC0',
+          tension: 0.25,
+          pointRadius: 2
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { position: 'top', ...commonLegend } },
+      scales: {
+        x: { grid: commonScaleGrid, ticks: commonTicks },
+        y: { grid: commonScaleGrid, ticks: commonTicks }
+      }
+    }
+  });
+
+  // ---------- Chart 4: Top 10 States (horizontal bar, clickable Tamil Nadu) ----------
+  var stateLabels = ['Tamil Nadu','Uttar Pradesh','Maharashtra','Madhya Pradesh','Karnataka','Rajasthan','Andhra Pradesh','Gujarat','Telangana','Kerala'];
+  var stateData = [358055,322692,284852,268677,227572,218764,197879,187644,144576,149495];
+  var stateColors = stateLabels.map(function (l) { return l === 'Tamil Nadu' ? '#C0152F' : '#1B4B66'; });
+
+  var chart4 = new Chart(document.getElementById('chart4'), {
+    type: 'bar',
+    data: {
+      labels: stateLabels,
+      datasets: [{
+        label: 'Cumulative fatalities',
+        data: stateData,
+        backgroundColor: stateColors
+      }]
+    },
+    options: {
+      indexAxis: 'y',
+      responsive: true,
+      maintainAspectRatio: false,
+      onHover: function (evt, elements) {
+        var canvas = evt.native ? evt.native.target : evt.target;
+        if (elements && elements.length && stateLabels[elements[0].index] === 'Tamil Nadu') {
+          canvas.style.cursor = 'pointer';
+        } else {
+          canvas.style.cursor = 'default';
+        }
+      },
+      onClick: function (evt, elements) {
+        if (elements && elements.length) {
+          var idx = elements[0].index;
+          if (stateLabels[idx] === 'Tamil Nadu') {
+            goToView('view-q2');
+          }
+        }
+      },
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { grid: commonScaleGrid, ticks: commonTicks, title: { display: true, text: 'Cumulative fatalities', color: bodyColor } },
+        y: { grid: { display: false }, ticks: commonTicks }
+      }
+    }
+  });
+
+  // ---------- Chart 5: Diurnal profile (grouped bar) ----------
+  new Chart(document.getElementById('chart5'), {
+    type: 'bar',
+    data: {
+      labels: ['00:00-03:00','03:00-06:00','06:00-09:00','09:00-12:00','12:00-15:00','15:00-18:00','18:00-21:00','21:00-24:00'],
+      datasets: [
+        {
+          label: "Accidents ('000s)",
+          data: [1478,1033,2217,2636,3034,3865,4192,4539],
+          backgroundColor: '#1B4B66'
+        },
+        {
+          label: "Deaths ('000s)",
+          data: [236,162,349,419,481,614,670,720],
+          backgroundColor: '#C0152F'
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { position: 'top', ...commonLegend } },
+      scales: {
+        x: { grid: commonScaleGrid, ticks: commonTicks },
+        y: { grid: commonScaleGrid, ticks: commonTicks }
+      }
+    }
+  });
+
+  // ---------- Chart A: Road Network Length & Density (dual-axis grouped bar) ----------
+  var roadStateLabels = ['Maharashtra','Uttar Pradesh','Karnataka','Madhya Pradesh','Bihar','Rajasthan','West Bengal','Tamil Nadu','Gujarat'];
+  var roadLength = [609872,459846,369687,369271,290475,287543,267905,254517,234125];
+  var roadDensity = [198.3,190.9,192.8,119.8,308.5,84.0,301.9,195.7,119.3];
+  var lengthColors = roadStateLabels.map(function (l) { return l === 'Tamil Nadu' ? '#C0152F' : '#1B4B66'; });
+  var densityColors = roadStateLabels.map(function (l) { return l === 'Tamil Nadu' ? '#C0152F' : '#4F8FC0'; });
+
+  new Chart(document.getElementById('chartA'), {
+    type: 'bar',
+    data: {
+      labels: roadStateLabels,
+      datasets: [
+        {
+          label: 'Total Road Length (km)',
+          data: roadLength,
+          backgroundColor: lengthColors,
+          yAxisID: 'yLength'
+        },
+        {
+          label: 'Road Density (km per 100 sq km)',
+          data: roadDensity,
+          backgroundColor: densityColors,
+          yAxisID: 'yDensity'
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { position: 'top', ...commonLegend } },
+      scales: {
+        x: { grid: commonScaleGrid, ticks: commonTicks },
+        yLength: {
+          type: 'linear',
+          position: 'left',
+          grid: commonScaleGrid,
+          ticks: commonTicks,
+          title: { display: true, text: 'Total Road Length (km)', color: bodyColor }
+        },
+        yDensity: {
+          type: 'linear',
+          position: 'right',
+          grid: { drawOnChartArea: false },
+          ticks: commonTicks,
+          title: { display: true, text: 'Road Density (km/100 sq km)', color: bodyColor }
+        }
+      }
+    }
+  });
+
+  // ---------- Chart B: Registered Motor Vehicles (horizontal bar, sorted desc) ----------
+  var vehicleData = [
+    { state: 'Maharashtra', value: 25562175 },
+    { state: 'Tamil Nadu', value: 22518669 },
+    { state: 'Uttar Pradesh', value: 21635531 },
+    { state: 'Gujarat', value: 18720567 },
+    { state: 'Karnataka', value: 14784961 },
+    { state: 'Rajasthan', value: 12378929 },
+    { state: 'Madhya Pradesh', value: 11141127 }
+  ].sort(function (a, b) { return b.value - a.value; });
+
+  var vehicleLabels = vehicleData.map(function (d) { return d.state; });
+  var vehicleValues = vehicleData.map(function (d) { return d.value; });
+  var vehicleColors = vehicleLabels.map(function (l) { return l === 'Tamil Nadu' ? '#C0152F' : '#1B4B66'; });
+
+  new Chart(document.getElementById('chartB'), {
+    type: 'bar',
+    data: {
+      labels: vehicleLabels,
+      datasets: [{
+        label: 'Registered motor vehicles',
+        data: vehicleValues,
+        backgroundColor: vehicleColors
+      }]
+    },
+    options: {
+      indexAxis: 'y',
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { grid: commonScaleGrid, ticks: commonTicks, title: { display: true, text: 'Registered motor vehicles', color: bodyColor } },
+        y: { grid: { display: false }, ticks: commonTicks }
+      }
+    }
+  });
+</script>
+</body>
+</html>
